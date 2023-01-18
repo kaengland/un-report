@@ -1,4 +1,6 @@
 library(tidyverse)
+library(ggprism)
+
 getwd()
 
 gapminder_data <- read_csv("data/gapminder_data.csv")
@@ -82,6 +84,34 @@ anti_join(co2_emissions, gapminder_data_2007)
 #full join-- combines tables and puts NA where data doesn't exist
 full_join(co2_emissions, gapminder_data_2007)
 
+co2_emissions%>%
+  left_join(gapminder_data_2007)
+
+joined_co2_pop <- inner_join(co2_emissions, gapminder_data_2007)
+
+#Writing a CSV
+write_csv(joined_co2_pop, file = "data/joined_co2_pop.csv")
+
+# read in CSV
+joined_pop_co2 <- read_csv("data/joined_co2_pop.csv")
+
+# gdpPercap histogram and LifeExp histogram
+joined_pop_co2%>%
+  ggplot(aes(x=gdpPercap))+  ##aes inside of ggplot() function is more common
+  geom_histogram()
+
+gdp_co2_plot<-joined_pop_co2%>%
+  ggplot(aes(x=gdpPercap, y=per_capita_emissions))+
+  geom_point()+
+  geom_smooth(method = 'lm', se = FALSE)+ #'lm' is linear and se = FALSE is SE
+  labs(x = "GDP per Capita", y = "CO2 Emissions per Capita (metric tons)", title = "Comparing per capita CO2 emissions and GDP") +
+  theme_classic() +
+  ggpubr::stat_regline_equation(aes(label = after_stat(rr.label))) # Gets us the R^2 value
+  
+ggsave(gdp_co2_plot, filename = 'figures/gdp_vs_co2_plot.png',
+       height=4, width=6, units = "in", dpi=300)
+
+install.packages("ggpubr")
 
 
 
